@@ -1,0 +1,38 @@
+<mat-toolbar
+    class="title-bar bg-gray-900 text-white h-8 min-h-8 px-2 flex items-center justify-between select-none"
+>
+    <!-- Área arrastrable -->
+    <div
+        class="flex-1 h-full flex items-center cursor-move"
+        (mousedown)="onDrag()"
+    >
+        <span class="text-sm font-medium">Mako - shadPS4</span>
+    </div>
+
+    <!-- Botones de control -->
+    <div class="flex gap-1">
+        <button
+            mat-icon-button
+            class="w-8 h-8 hover:bg-gray-700"
+            (click)="minimize()"
+        >
+            <mat-icon class="text-base">minimize</mat-icon>
+        </button>
+        <button
+            mat-icon-button
+            class="w-8 h-8 hover:bg-gray-700"
+            (click)="toggleMaximize()"
+        >
+            <mat-icon class="text-base"
+                >{{ isMaximized ? 'filter_none' : 'crop_square' }}</mat-icon
+            >
+        </button>
+        <button
+            mat-icon-button
+            class="w-8 h-8 hover:bg-red-600"
+            (click)="close()"
+        >
+            <mat-icon class="text-base">close</mat-icon>
+        </button>
+    </div>
+</mat-toolbar>
