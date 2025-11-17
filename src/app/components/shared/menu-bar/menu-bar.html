@@ -1,0 +1,53 @@
+<mat-toolbar
+    class="menu-toolbar border-b border-black/10 dark:border-white/10 px-2"
+>
+    <button mat-button class="menu-button" [matMenuTriggerFor]="fileMenu">
+        File
+    </button>
+    <mat-menu #fileMenu="matMenu">
+        <button mat-menu-item (click)="onBootGame()">
+            <mat-icon>play_circle_outline</mat-icon>
+            <span>Boot Game</span>
+        </button>
+    </mat-menu>
+
+    <button mat-button class="menu-button" [matMenuTriggerFor]="viewMenu">
+        View
+    </button>
+    <mat-menu #viewMenu="matMenu">
+        <button mat-menu-item (click)="viewService.setViewMode('grid')">
+            <mat-icon
+                >{{ viewService.viewMode() === 'grid' ? 'check_box' :
+                'check_box_outline_blank' }}</mat-icon
+            >
+            <span>Grid View</span>
+        </button>
+        <button mat-menu-item (click)="viewService.setViewMode('table')">
+            <mat-icon
+                >{{ viewService.viewMode() === 'table' ? 'check_box' :
+                'check_box_outline_blank' }}</mat-icon
+            >
+            <span>List View</span>
+        </button>
+    </mat-menu>
+
+    <button mat-button class="menu-button" [matMenuTriggerFor]="settingsMenu">
+        Settings
+    </button>
+    <mat-menu #settingsMenu="matMenu">
+        <button mat-menu-item (click)="navigateToSettings()">
+            <mat-icon>settings</mat-icon>
+            <span>Configure...</span>
+        </button>
+    </mat-menu>
+
+    <button mat-button class="menu-button" [matMenuTriggerFor]="helpMenu">
+        Help
+    </button>
+    <mat-menu #helpMenu="matMenu">
+        <button mat-menu-item (click)="onOpenAbout()">
+            <mat-icon>info_outline</mat-icon>
+            <span>About Mako</span>
+        </button>
+    </mat-menu>
+</mat-toolbar>

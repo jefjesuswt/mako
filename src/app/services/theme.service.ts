@@ -1,7 +1,16 @@
-import { Injectable, signal, effect, PLATFORM_ID, inject } from "@angular/core";
+import {
+  Injectable,
+  signal,
+  computed,
+  effect,
+  PLATFORM_ID,
+  inject,
+  Signal,
+  WritableSignal,
+} from "@angular/core";
 import { isPlatformBrowser } from "@angular/common";
 
-type ThemeMode = "light" | "dark" | "auto";
+export type ThemeMode = "light" | "dark" | "auto";
 
 @Injectable({
   providedIn: "root",
@@ -10,99 +19,77 @@ export class Theme {
   private platformId = inject(PLATFORM_ID);
   private isBrowser = isPlatformBrowser(this.platformId);
 
-  // Signal para el modo seleccionado por el usuario
-  mode = signal<ThemeMode>("auto");
+  private systemPrefersDark: WritableSignal<boolean>;
 
-  // Signal computado para saber si está en modo oscuro
-  isDark = signal<boolean>(false);
+  private modeSignal: WritableSignal<ThemeMode>;
+
+  public readonly mode: Signal<ThemeMode>;
+
+  public isDark = computed(() => {
+    const currentMode = this.mode();
+    if (currentMode === "auto") {
+      return this.systemPrefersDark();
+    }
+    return currentMode === "dark";
+  });
 
   constructor() {
-    if (!this.isBrowser) return;
+    const savedMode = this.loadSavedTheme();
+    this.modeSignal = signal(savedMode);
+    this.mode = this.modeSignal.asReadonly();
 
-    // Cargar el tema guardado
-    this.loadSavedTheme();
+    if (!this.isBrowser) {
+      this.systemPrefersDark = signal(false);
+      return;
+    }
 
-    // Escuchar cambios en las preferencias del sistema
+    this.systemPrefersDark = signal(this.getInitialSystemPreference());
     this.watchSystemPreference();
 
-    // Efecto para aplicar el tema cuando cambie
-    effect(() => {
-      this.applyTheme(this.mode());
-    });
+    this.createThemeEffect();
   }
 
-  private loadSavedTheme(): void {
+  private loadSavedTheme(): ThemeMode {
+    if (!this.isBrowser) return "auto";
     const savedMode = localStorage.getItem("theme-mode") as ThemeMode;
+    return ["light", "dark", "auto"].includes(savedMode) ? savedMode : "auto";
+  }
 
-    if (savedMode && ["light", "dark", "auto"].includes(savedMode)) {
-      this.mode.set(savedMode);
-    } else {
-      this.mode.set("auto");
-    }
+  private getInitialSystemPreference(): boolean {
+    if (!this.isBrowser) return false;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
   }
 
   private watchSystemPreference(): void {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
-    // Establecer el estado inicial
-    this.updateIsDark();
-
-    // Escuchar cambios
-    mediaQuery.addEventListener("change", () => {
-      if (this.mode() === "auto") {
-        this.updateIsDark();
-      }
+    mediaQuery.addEventListener("change", (e) => {
+      this.systemPrefersDark.set(e.matches);
     });
   }
 
-  private applyTheme(mode: ThemeMode): void {
-    const html = document.documentElement;
+  private createThemeEffect(): void {
+    effect(() => {
+      const isDark = this.isDark();
+      const mode = this.mode();
 
-    // Remover clases anteriores
-    html.classList.remove("light-mode", "dark-mode", "dark");
+      document.documentElement.classList.toggle("dark", isDark);
+      document.documentElement.style.colorScheme = isDark ? "dark" : "light";
 
-    if (mode === "light") {
-      html.classList.add("light-mode");
-      this.isDark.set(false);
-    } else if (mode === "dark") {
-      html.classList.add("dark-mode", "dark"); // 'dark' para Tailwind v4
-      this.isDark.set(true);
-    } else {
-      // Modo auto: usar preferencia del sistema
-      const prefersDark = window.matchMedia(
-        "(prefers-color-scheme: dark)",
-      ).matches;
-      if (prefersDark) {
-        html.classList.add("dark"); // Solo 'dark' para Tailwind en modo auto
-      }
-      this.updateIsDark();
-    }
-
-    // Guardar preferencia
-    localStorage.setItem("theme-mode", mode);
-  }
-
-  private updateIsDark(): void {
-    const prefersDark = window.matchMedia(
-      "(prefers-color-scheme: dark)",
-    ).matches;
-    this.isDark.set(prefersDark);
+      localStorage.setItem("theme-mode", mode);
+    });
   }
 
   setMode(mode: ThemeMode): void {
-    this.mode.set(mode);
+    this.modeSignal.set(mode);
   }
 
   toggleTheme(): void {
-    const currentMode = this.mode();
-
-    if (currentMode === "auto") {
-      // Si está en auto, cambiar a light o dark dependiendo del estado actual
-      this.mode.set(this.isDark() ? "light" : "dark");
-    } else if (currentMode === "light") {
-      this.mode.set("dark");
-    } else {
-      this.mode.set("light");
-    }
+    this.modeSignal.update((currentMode: ThemeMode) => {
+      if (currentMode === "auto") {
+        return this.isDark() ? "light" : "dark";
+      }
+      return currentMode === "light" ? "dark" : "light";
+    });
   }
 }

@@ -1,35 +1,70 @@
 @use "@angular/material" as mat;
+@use "tailwindcss";
+@config "../tailwind.config.js";
+
+@include mat.core();
+
+$mako-palette: mat.$cyan-palette;
 
 html {
-    color-scheme: light dark;
-
     @include mat.theme(
         (
-            color: mat.$violet-palette,
-            typography: Roboto,
+            color: (
+                primary: $mako-palette,
+                secondary: $mako-palette,
+                tertiary: $mako-palette,
+            ),
             density: 0,
         )
     );
-}
-
-body {
-    margin: 0;
-    height: 100vh;
-    background: var(--mat-sys-surface);
-    color: var(--mat-sys-on-surface);
-    font-family: Roboto, "Helvetica Neue", sans-serif;
-    transition:
-        background-color 0.3s ease,
-        color 0.3s ease;
-}
-
-html.light-mode {
     color-scheme: light;
 }
 
-html.dark-mode {
+html.dark {
+    // Aplica el tema oscuro
+    @include mat.theme(
+        (
+            color: (
+                primary: $mako-palette,
+                secondary: $mako-palette,
+                tertiary: $mako-palette,
+            ),
+            density: 0,
+            is-dark: true,
+        )
+    );
+
     color-scheme: dark;
 }
 
-/* Tailwind */
-@import "tailwindcss";
+// 5. Estilos de body
+body {
+    margin: 0;
+    height: 100vh;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+    background: var(--mat-sys-surface);
+    color: var(--mat-sys-on-surface);
+}
+
+button[mat-icon-button][color="primary"] .mat-icon {
+    color: var(--mat-sys-primary);
+}
+
+.compat-badge {
+    @apply rounded-full px-2.5 py-0.5 text-xs font-medium;
+}
+
+.compat-perfect {
+    @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300;
+}
+.compat-playable {
+    @apply bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300;
+}
+.compat-en-juego {
+    // (Por si acaso)
+    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300;
+}
+
+.menu-button {
+    @apply rounded-none text-sm font-medium;
+}

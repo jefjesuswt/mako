@@ -1,0 +1,119 @@
+<table
+    mat-table
+    [dataSource]="dataSource()"
+    class="w-full mat-elevation-z0 border border-solid border-white/10"
+    appearance="outlined"
+>
+    <!-- Columna Status (Live) -->
+    <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef class="status-cell"></th>
+        <td mat-cell *matCellDef="let game" class="status-cell">
+            @if (game.isRunning) {
+            <span matTooltip="En vivo" class="relative flex h-3 w-3">
+                <span
+                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"
+                ></span>
+                <span
+                    class="relative inline-flex rounded-full h-3 w-3 bg-red-500"
+                ></span>
+            </span>
+            }
+        </td>
+    </ng-container>
+
+    <!-- (ARREGLO) Columna Favorito -->
+    <ng-container matColumnDef="favorite">
+        <th mat-header-cell *matHeaderCellDef class="favorite-cell"></th>
+        <td mat-cell *matCellDef="let game" class="favorite-cell">
+            <!-- Botón de Favorito -->
+            <button
+                mat-icon-button
+                (click)="onFavoriteClick(game)"
+                [matTooltip]="game.favorite ? 'Quitar favorito' : 'Marcar favorito'"
+            >
+                <mat-icon [class.text-yellow-400]="game.favorite"
+                    >{{ game.favorite ? "star" : "star_border" }}</mat-icon
+                >
+            </button>
+        </td>
+    </ng-container>
+
+    <!-- Columna Icono -->
+    <ng-container matColumnDef="icon">
+        <th mat-header-cell *matHeaderCellDef class="icon-cell"></th>
+        <td mat-cell *matCellDef="let game" class="icon-cell">
+            <img [src]="game.icon" [alt]="game.name" class="h-6 w-6 rounded" />
+        </td>
+    </ng-container>
+
+    <!-- Columna Name -->
+    <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Juego</th>
+        <td mat-cell *matCellDef="let game" class="font-medium">
+            {{ game.name }}
+        </td>
+    </ng-container>
+
+    <!-- Columna Compatibilidad -->
+    <ng-container matColumnDef="compatibility">
+        <th mat-header-cell *matHeaderCellDef class="compatibility-cell">
+            Compat.
+        </th>
+        <td mat-cell *matCellDef="let game" class="compatibility-cell">
+            <span
+                class="compat-badge"
+                [class]="getCompatClass(game.compatibility)"
+            >
+                {{ game.compatibility }}
+            </span>
+        </td>
+    </ng-container>
+
+    <!-- Columna Región -->
+    <ng-container matColumnDef="region">
+        <th mat-header-cell *matHeaderCellDef>Región</th>
+        <td mat-cell *matCellDef="let game">{{ game.region }}</td>
+    </ng-container>
+
+    <!-- Columna Versión -->
+    <ng-container matColumnDef="version">
+        <th mat-header-cell *matHeaderCellDef>Versión</th>
+        <td mat-cell *matCellDef="let game">{{ game.version }}</td>
+    </ng-container>
+
+    <!-- Columna Playtime -->
+    <ng-container matColumnDef="playtime">
+        <th mat-header-cell *matHeaderCellDef>Tiempo</th>
+        <td mat-cell *matCellDef="let game">{{ game.playtime }}</td>
+    </ng-container>
+
+    <!-- (ARREGLO) Columna Acciones -->
+    <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef class="actions-cell"></th>
+        <td mat-cell *matCellDef="let game" class="actions-cell">
+            <!-- Botón de Play/Stop -->
+            <button
+                mat-icon-button
+                [matTooltip]="game.isRunning ? 'Detener' : 'Jugar'"
+                (click)="onPlayStopClick(game)"
+                color="primary"
+            >
+                <mat-icon
+                    >{{ game.isRunning ? "stop" : "play_arrow" }}</mat-icon
+                >
+            </button>
+            <!-- Botón de Settings -->
+            <button
+                mat-icon-button
+                matTooltip="Configuración"
+                (click)="onSettingsClick(game)"
+                color="primary"
+            >
+                <mat-icon>settings</mat-icon>
+            </button>
+        </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+</table>

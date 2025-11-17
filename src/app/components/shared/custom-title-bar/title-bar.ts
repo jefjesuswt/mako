@@ -1,59 +1,63 @@
-import { Component, inject, signal } from "@angular/core";
+import {
+  Component,
+  inject,
+  signal,
+  computed, // (REFACTOR) 1. Importar computed
+  ChangeDetectionStrategy, // (REFACTOR) 2. Importar ChangeDetection
+} from "@angular/core";
 import { invoke } from "@tauri-apps/api/core";
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatTooltipModule } from "@angular/material/tooltip";
-import { Theme } from "../../../services/theme.service";
+import { Theme } from "../../../services/theme.service"; // Asumiendo que esta es la ruta correcta
 
 @Component({
   selector: "app-title-bar",
   imports: [MatIconModule, MatButtonModule, MatToolbarModule, MatTooltipModule],
   template: `
     <mat-toolbar
-      class="title-bar bg-gray-900 text-white h-8 min-h-8 px-2 flex items-center justify-between select-none"
+      class="title-bar
+             h-10 min-h-10 px-2 flex items-center justify-between select-none
+             border-b border-black/10 dark:border-white/10"
     >
-      <!-- Área arrastrable -->
       <div
-        class="flex-1 h-full flex items-center cursor-move"
+        class="flex-1 h-full flex items-center gap-2 cursor-move"
         (mousedown)="onDrag()"
       >
-        <span class="text-sm font-medium">Mako - shadPS4 Frontend</span>
+        <mat-icon class="text-lg text-blue-500">auto_awesome_mosaic</mat-icon>
+        <span class="text-sm font-medium">mako - shadPS4</span>
       </div>
 
-      <!-- Toggle de tema -->
       <button
         mat-icon-button
-        class="w-8 h-8 hover:bg-gray-700"
+        class="w-8 h-8 rounded-full hover:bg-black/10 dark:hover:bg-white/10"
         (click)="theme.toggleTheme()"
-        [matTooltip]="getThemeTooltip()"
+        [matTooltip]="themeTooltip()"
       >
         <mat-icon class="text-base">
-          {{ getThemeIcon() }}
+          {{ themeIcon() }}
         </mat-icon>
       </button>
 
-      <!-- Botones de control -->
-      <div class="flex gap-1">
+      <div class="flex">
         <button
           mat-icon-button
-          class="w-8 h-8 hover:bg-gray-700"
+          class="w-8 h-8 rounded-full hover:bg-black/10 dark:hover:bg-white/10"
           (click)="minimize()"
         >
           <mat-icon class="text-base">minimize</mat-icon>
         </button>
         <button
           mat-icon-button
-          class="w-8 h-8 hover:bg-gray-700"
+          class="w-8 h-8 rounded-full hover:bg-black/10 dark:hover:bg-white/10"
           (click)="toggleMaximize()"
         >
-          <mat-icon class="text-base">{{
-            isMaximized() ? "filter_none" : "crop_square"
-          }}</mat-icon>
+          <mat-icon class="text-base">{{ maximizeIcon() }}</mat-icon>
         </button>
         <button
           mat-icon-button
-          class="w-8 h-8 hover:bg-red-600"
+          class="w-8 h-8 rounded-full hover:bg-red-600 hover:text-white"
           (click)="close()"
         >
           <mat-icon class="text-base">close</mat-icon>
@@ -61,22 +65,44 @@ import { Theme } from "../../../services/theme.service";
       </div>
     </mat-toolbar>
   `,
+  // (REFACTOR) 7. Mover estilos de :host al decorador
+  host: {
+    display: "block",
+    "(window:resize)": "checkMaximizedState()", // Opcional: para sincronizar si se maximiza fuera de la app
+    "style.-webkit-app-region": "drag",
+  },
   styles: [
     `
-      :host {
-        display: block;
-        -webkit-app-region: drag;
-      }
-
+      /* (REFACTOR) 8. Solo los estilos de hijos se quedan aquí */
       button {
         -webkit-app-region: no-drag;
       }
     `,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush, // (REFACTOR) 9. Añadir ChangeDetection
 })
 export class TitleBar {
   theme = inject(Theme);
   isMaximized = signal(false);
+
+  // (REFACTOR) 10. Convertir estado derivado a computed()
+  themeIcon = computed(() => {
+    const mode = this.theme.mode();
+    if (mode === "auto") return "brightness_auto";
+    return mode === "dark" ? "dark_mode" : "light_mode";
+  });
+
+  themeTooltip = computed(() => {
+    const mode = this.theme.mode();
+    if (mode === "auto") return "Modo automático";
+    return mode === "dark" ? "Modo oscuro" : "Modo claro";
+  });
+
+  maximizeIcon = computed(() => {
+    return this.isMaximized() ? "filter_none" : "crop_square";
+  });
+
+  // --- Métodos de Tauri ---
 
   async onDrag() {
     await invoke("start_drag");
@@ -87,6 +113,7 @@ export class TitleBar {
   }
 
   async toggleMaximize() {
+    // La lógica de invoke está bien
     if (this.isMaximized()) {
       await invoke("unmaximize_window");
     } else {
@@ -99,15 +126,11 @@ export class TitleBar {
     await invoke("close_window");
   }
 
-  getThemeIcon(): string {
-    const mode = this.theme.mode();
-    if (mode === "auto") return "brightness_auto";
-    return mode === "dark" ? "dark_mode" : "light_mode";
-  }
-
-  getThemeTooltip(): string {
-    const mode = this.theme.mode();
-    if (mode === "auto") return "Modo automático";
-    return mode === "dark" ? "Modo oscuro" : "Modo claro";
+  // Opcional: Sincronizar el estado si el usuario
+  // maximiza/restaura usando los controles del SO.
+  async checkMaximizedState() {
+    // Asumiendo que tienes un comando de Tauri 'is_window_maximized'
+    // const isMaximized = await invoke<boolean>('is_window_maximized');
+    // this.isMaximized.set(isMaximized);
   }
 }

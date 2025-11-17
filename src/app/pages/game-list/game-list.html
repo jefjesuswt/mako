@@ -1,0 +1,46 @@
+<div class="container mx-auto px-8 pt-4 pb-8">
+    <div class="flex justify-end mb-4">
+        <mat-button-toggle-group
+            [value]="viewMode()"
+            (change)="setViewMode($event.value)"
+            color="primary"
+        >
+            <mat-button-toggle value="grid" matTooltip="Vista de Cuadrícula">
+                <mat-icon>grid_view</mat-icon>
+            </mat-button-toggle>
+            <mat-button-toggle value="table" matTooltip="Vista de Lista">
+                <mat-icon>view_list</mat-icon>
+            </mat-button-toggle>
+        </mat-button-toggle-group>
+    </div>
+
+    <div class="view-container">
+        <div
+            class="grid-view grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-y-4 gap-x-8"
+            [class.active-view]="viewMode() === 'grid'"
+            [class.inactive-view]="viewMode() !== 'grid'"
+        >
+            @for (game of games(); track game.id) {
+            <app-game-card
+                [game]="game"
+                (playStop)="handlePlayStop($event)"
+                (settings)="handleSettings($event)"
+                (favorite)="handleFavorite($event)"
+            ></app-game-card>
+            }
+        </div>
+
+        <div
+            class="table-view"
+            [class.active-view]="viewMode() === 'table'"
+            [class.inactive-view]="viewMode() !== 'table'"
+        >
+            <app-game-table
+                [dataSource]="games()"
+                (playStop)="handlePlayStop($event)"
+                (settings)="handleSettings($event)"
+                (favorite)="handleFavorite($event)"
+            />
+        </div>
+    </div>
+</div>
