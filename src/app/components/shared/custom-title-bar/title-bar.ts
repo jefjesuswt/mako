@@ -2,15 +2,15 @@ import {
   Component,
   inject,
   signal,
-  computed, // (REFACTOR) 1. Importar computed
-  ChangeDetectionStrategy, // (REFACTOR) 2. Importar ChangeDetection
+  computed,
+  ChangeDetectionStrategy,
 } from "@angular/core";
 import { invoke } from "@tauri-apps/api/core";
 import { MatIconModule } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatTooltipModule } from "@angular/material/tooltip";
-import { Theme } from "../../../services/theme.service"; // Asumiendo que esta es la ruta correcta
+import { Theme } from "../../../services/theme.service";
 
 @Component({
   selector: "app-title-bar",
@@ -25,7 +25,12 @@ import { Theme } from "../../../services/theme.service"; // Asumiendo que esta e
         class="flex-1 h-full flex items-center gap-2 cursor-move"
         (mousedown)="onDrag()"
       >
-        <mat-icon class="text-lg text-blue-500">auto_awesome_mosaic</mat-icon>
+        <!-- <mat-icon class="text-lg text-blue-500">auto_awesome_mosaic</mat-icon> -->
+        <img
+          class="w-12 h-12 rounded-full"
+          src="/assets/logos/mako-1-logo.png"
+          alt="avatar"
+        />
         <span class="text-sm font-medium">mako - shadPS4</span>
       </div>
 
